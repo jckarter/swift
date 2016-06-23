@@ -1500,6 +1500,12 @@ namespace {
 
       Type SwiftType;
       if (Decl->getDeclContext()->getRedeclContext()->isTranslationUnit()) {
+        // Ignore the 'id' typedef. We want to bridge the underlying
+        // ObjCId type.
+        if (Name.str() == "id" && Impl.SwiftContext.LangOpts.EnableIdAsAny) {
+          return nullptr;
+        }
+      
         bool IsError;
         StringRef StdlibTypeName;
         MappedTypeNameKind NameMapping;

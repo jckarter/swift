@@ -919,15 +919,21 @@ namespace {
                  ImportHint::ObjCPointer };
       }
       
-      // Beyond here, we're using AnyObject.
+      // Beyond here, we're using AnyObject or Any.
       auto proto = Impl.SwiftContext.getProtocol(
                      KnownProtocolKind::AnyObject);
       if (!proto)
         return Type();
 
-      // id maps to AnyObject.
+      // id maps to Any in bridgeable contexts, AnyObject otherwise.
       if (type->isObjCIdType()) {
-        return { proto->getDeclaredType(), ImportHint::ObjCPointer };
+        if (Impl.SwiftContext.LangOpts.EnableIdAsAny) {
+          return { proto->getDeclaredType(),
+                 ImportHint(ImportHint::ObjCBridged,
+                         ProtocolCompositionType::get(Impl.SwiftContext, {})) };
+        } else {
+          return { proto->getDeclaredType(), ImportHint::ObjCPointer };
+        }
       }
 
       // Class maps to AnyObject.Type.
