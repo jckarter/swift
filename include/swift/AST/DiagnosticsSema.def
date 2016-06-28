@@ -2661,7 +2661,7 @@ ERROR(objc_convention_invalid,none,
 WARNING(function_type_no_parens,none,
         "single argument function types require parentheses", ())
 NOTE(not_objc_empty_protocol_composition,none,
-     "'protocol<>' is not considered '@objc'; use 'AnyObject' instead", ())
+     "'Any' cannot be bridged to Objective-C in this position; use 'AnyObject' instead", ())
 NOTE(not_objc_protocol,none,
      "protocol %0 is not '@objc'", (Type))
 NOTE(not_objc_empty_tuple,none,
