@@ -734,6 +734,21 @@ static CanSILFunctionType getSILFunctionType(SILModule &M,
                              extInfo);
   }
   
+  auto getCaptureBoxType = [&](SILType capturedType) -> CanSILBoxType {
+    SILLayout *layout;
+    SILField field(capturedType.getSwiftRValueType(), /*mutable*/ true);
+    ArrayRef<Substitution> subs;
+    if (!capturedType.hasTypeParameter()) {
+      // A fully concrete type can use a nongeneric box layout.
+      layout = SILLayout::get(M.getASTContext(), nullptr, field);
+    } else {
+      // A type that relies on the generic environment needs to capture that
+      // environment.
+      layout = SILLayout::get(M.getASTContext(), genericSig, field);
+      subs = genericSig->getSub
+    }
+  };
+  
   // Lower the capture context parameters, if any.
   // But note that default arg generators can't capture anything right now,
   // and if we ever add that ability, it will be a different capture list

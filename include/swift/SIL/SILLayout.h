@@ -57,6 +57,8 @@ class SILField final {
   }
   
 public:
+  SILField() = default;
+
   SILField(CanType LoweredType, bool Mutable)
     : LoweredTypeAndFlags(LoweredType, getFlagsValue(Mutable))
   {}

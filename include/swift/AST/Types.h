@@ -3387,11 +3387,16 @@ class SILBoxType final : public TypeBase,
              SILLayout *Layout, ArrayRef<Substitution> Args);
 
 public:
+  static CanSILBoxType get(ASTContext &C,
+                           SILLayout *Layout, ArrayRef<Substitution> Args);
+
   SILLayout *getLayout() const { return Layout; }
   ArrayRef<Substitution> getGenericArgs() const {
     return llvm::makeArrayRef(getTrailingObjects<Substitution>(),
                               NumGenericArgs);
   }
+  /// Get the substituted lowered type of a field in the box.
+  SILType getFieldType(unsigned index) const; // in SILLayout.h
 
   // TODO: SILBoxTypes should be explicitly constructed in terms of specific
   // layouts. As a staging mechanism, we expose the old single-boxed-type
@@ -3400,9 +3405,7 @@ public:
   
   static CanSILBoxType get(CanType BoxedType);
   CanType getBoxedType() const;
-  // In SILType.h
-  SILType getBoxedAddressType() const;
-  SILType getFieldType(unsigned index) const;
+  SILType getBoxedAddressType() const; // In SILType.h
 
   static bool classof(const TypeBase *T) {
     return T->getKind() == TypeKind::SILBox;
