@@ -152,6 +152,7 @@ public:
 };
 
 inline SILType SILBoxType::getFieldType(unsigned index) const {
+#warning "do SIL substitution instead of AST substitution"
   auto fieldTy = getLayout()->getFields()[index].getLoweredType();
   // Apply generic arguments if the layout is generic.
   if (!getGenericArgs().empty()) {

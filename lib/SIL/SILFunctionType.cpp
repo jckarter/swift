@@ -737,6 +737,7 @@ static CanSILFunctionType getSILFunctionType(SILModule &M,
   auto getCaptureBoxType = [&](SILType capturedType) -> CanSILBoxType {
     SILLayout *layout;
     SILField field(capturedType.getSwiftRValueType(), /*mutable*/ true);
+    SmallVector<Substitution, 4> subsBuf;
     ArrayRef<Substitution> subs;
     if (!capturedType.hasTypeParameter()) {
       // A fully concrete type can use a nongeneric box layout.
@@ -745,8 +746,21 @@ static CanSILFunctionType getSILFunctionType(SILModule &M,
       // A type that relies on the generic environment needs to capture that
       // environment.
       layout = SILLayout::get(M.getASTContext(), genericSig, field);
-      subs = genericSig->getSub
+      
+      // Bind the box layout type parameters to the function's type parameters.
+      TypeSubstitutionMap identitySubs;
+      for (auto param : genericSig->getGenericParams())
+        identitySubs.insert({param, param});
+      
+      genericSig->getSubstitutions(*M.getSwiftModule(),
+        identitySubs,
+        [](CanType, Type, ProtocolType *p) {
+          return ProtocolConformanceRef(p->getDecl());
+        },
+        subsBuf);
+      subs = subsBuf;
     }
+    return SILBoxType::get(M.getASTContext(), layout, subs);
   };
   
   // Lower the capture context parameters, if any.
@@ -809,7 +823,7 @@ static CanSILFunctionType getSILFunctionType(SILModule &M,
       case CaptureKind::Box: {
         // Lvalues are captured as a box that owns the captured value.
         SILType ty = loweredTy.getAddressType();
-        CanType boxTy = SILBoxType::get(ty.getSwiftRValueType());
+        CanType boxTy = getCaptureBoxType(ty);
         auto convention = M.getOptions().EnableGuaranteedClosureContexts
           ? ParameterConvention::Direct_Guaranteed
           : ParameterConvention::Direct_Owned;
@@ -2193,10 +2207,6 @@ namespace {
     CanType visitSILBlockStorageType(CanSILBlockStorageType origType) {
       auto substCaptureType = visit(origType->getCaptureType());
       return SILBlockStorageType::get(substCaptureType);
-    }
-    CanType visitSILBoxType(CanSILBoxType origType) {
-      auto substBoxedType = visit(origType->getBoxedType());
-      return SILBoxType::get(substBoxedType);
     }
 
     /// Optionals need to have their object types substituted by these rules.
