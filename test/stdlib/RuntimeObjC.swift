@@ -872,4 +872,48 @@ ObjCConformsToProtocolTestSuite.test("cast/metatype") {
   expectTrue(SomeSubclass.self is SomeObjCProto.Type)
 }
 
+protocol P {}
+struct Foo: P, Hashable {
+  static func ==(_: Foo, _: Foo) -> Bool { fatalError() }
+  var hashValue: Int { fatalError() }
+}
+extension String: P {}
+extension NSSet: P {}
+
+var CastingToProtocolByBridgingTestSuite
+  = TestSuite("CastingToProtocolByBridging")
+
+CastingToProtocolByBridgingTestSuite.test("opaque boxed struct") {
+  let x = Foo()
+  let x1: AnyObject = x
+  let x2: Any = x
+  let x3: AnyHashable = x
+  // True by unboxing the opaque box class
+  expectTrue((x1 as? P) != nil)
+  expectTrue((x2 as? P) != nil)
+  expectTrue((x3 as? P) != nil)
+}
+
+CastingToProtocolByBridgingTestSuite.test("bridged class whose value type conforms") {
+  let y = NSString()
+  let y2: AnyObject = y
+  let y3: Any = y
+  let y4: AnyHashable = y
+  // True by bridging back to string
+  expectTrue((y  as? P) != nil)
+  expectTrue((y2 as? P) != nil)
+  expectTrue((y3 as? P) != nil)
+  expectTrue((y4 as? P) != nil)
+}
+
+CastingToProtocolByBridgingTestSuite.test("bridged value type whose class conforms") {
+  let z: Set<Int> = []
+  let z2: Any = z
+  let z3: AnyHashable = z
+  // True by bridging to NSSet
+  expectTrue((z  as? P) != nil)
+  expectTrue((z2 as? P) != nil)
+  expectTrue((z3 as? P) != nil)
+}
+
 runAllTests()
