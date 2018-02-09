@@ -222,3 +222,11 @@ public func forwardIntoMemory(fromNative x: AnyObject, y: Builtin.Word) -> Built
   let object = Builtin.castToBridgeObject(x, y)
   return object
 }
+
+public struct StructWithOptionalAddressOnlyField<T> {
+  public let newValue: T?
+}
+
+func useStructWithOptionalAddressOnlyField<T>(t: T) -> StructWithOptionalAddressOnlyField<T> {
+  return StructWithOptionalAddressOnlyField<T>(newValue: t)
+}

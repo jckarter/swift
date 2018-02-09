@@ -1,4 +1,4 @@
-// RUN: %target-swift-frontend -emit-silgen -sdk %S/Inputs -I %S/Inputs -enable-source-import %s | %FileCheck %s
+// RUN: %target-swift-frontend -enable-sil-ownership -emit-silgen -sdk %S/Inputs -I %S/Inputs -enable-source-import %s | %FileCheck %s
 
 // FIXME: rdar://problem/19648117 Needs splitting objc parts out
 // XFAIL: linux
@@ -267,7 +267,7 @@ func functionInoutToPointer() {
   // CHECK: [[BOX:%.*]] = alloc_box ${ var @callee_guaranteed () -> () }
   var f: () -> () = {}
 
-  // CHECK: [[REABSTRACT_BUF:%.*]] = alloc_stack $@callee_guaranteed (@in ()) -> @out ()
+  // CHECK: [[REABSTRACT_BUF:%.*]] = alloc_stack $@callee_guaranteed (@in_guaranteed ()) -> @out ()
   // CHECK: address_to_pointer [[REABSTRACT_BUF]]
   takesMutableVoidPointer(&f)
 }
@@ -305,8 +305,7 @@ func inoutPointerOrdering() {
 // rdar://problem/31542269
 // CHECK-LABEL: sil hidden @$S18pointer_conversion20optArrayToOptPointer5arrayySaySiGSg_tF
 func optArrayToOptPointer(array: [Int]?) {
-  // CHECK:   [[BORROW:%.*]] = begin_borrow %0
-  // CHECK:   [[COPY:%.*]] = copy_value [[BORROW]]
+  // CHECK:   [[COPY:%.*]] = copy_value %0
   // CHECK:   [[SIDE1:%.*]] = function_ref @$S18pointer_conversion11sideEffect1SiyF
   // CHECK:   [[RESULT1:%.*]] = apply [[SIDE1]]()
   // CHECK:   [[T0:%.*]] = select_enum [[COPY]]
@@ -326,8 +325,7 @@ func optArrayToOptPointer(array: [Int]?) {
   // CHECK:   [[TAKES:%.*]] = function_ref @$S18pointer_conversion20takesOptConstPointer_3andySPySiGSg_SitF
   // CHECK:   apply [[TAKES]]([[OPTDEP]], [[RESULT1]])
   // CHECK:   destroy_value [[OWNER]]
-  // CHECK:   end_borrow [[BORROW]]
-  // CHECK:   destroy_value %0
+  // CHECK-NOT:   destroy_value %0
   // CHECK: [[NONE_BB]]:
   // CHECK:   [[NO_VALUE:%.*]] = enum $Optional<UnsafePointer<Int>>, #Optional.none
   // CHECK:   [[NO_OWNER:%.*]] = enum $Optional<AnyObject>, #Optional.none
@@ -337,8 +335,7 @@ func optArrayToOptPointer(array: [Int]?) {
 
 // CHECK-LABEL: sil hidden @$S18pointer_conversion013optOptArrayTodD7Pointer5arrayySaySiGSgSg_tF
 func optOptArrayToOptOptPointer(array: [Int]??) {
-  // CHECK:   [[BORROW:%.*]] = begin_borrow %0
-  // CHECK:   [[COPY:%.*]] = copy_value [[BORROW]]
+  // CHECK:   [[COPY:%.*]] = copy_value %0
   // CHECK:   [[SIDE1:%.*]] = function_ref @$S18pointer_conversion11sideEffect1SiyF
   // CHECK:   [[RESULT1:%.*]] = apply [[SIDE1]]()
   // CHECK:   [[T0:%.*]] = select_enum [[COPY]]
@@ -369,8 +366,7 @@ func optOptArrayToOptOptPointer(array: [Int]??) {
   // CHECK:   [[TAKES:%.*]] = function_ref @$S18pointer_conversion08takesOptD12ConstPointer_3andySPySiGSgSg_SitF
   // CHECK:   apply [[TAKES]]([[OPTOPTDEP]], [[RESULT1]])
   // CHECK:   destroy_value [[OWNER]]
-  // CHECK:   end_borrow [[BORROW]]
-  // CHECK:   destroy_value %0
+  // CHECK-NOT:   destroy_value %0
   // CHECK: [[SOME_NONE_BB2]]:
   // CHECK:   [[NO_VALUE:%.*]] = enum $Optional<UnsafePointer<Int>>, #Optional.none
   // CHECK:   [[NO_OWNER:%.*]] = enum $Optional<AnyObject>, #Optional.none
@@ -384,8 +380,7 @@ func optOptArrayToOptOptPointer(array: [Int]??) {
 
 // CHECK-LABEL: sil hidden @$S18pointer_conversion21optStringToOptPointer6stringySSSg_tF
 func optStringToOptPointer(string: String?) {
-  // CHECK:   [[BORROW:%.*]] = begin_borrow %0
-  // CHECK:   [[COPY:%.*]] = copy_value [[BORROW]]
+  // CHECK:   [[COPY:%.*]] = copy_value %0
   // CHECK:   [[SIDE1:%.*]] = function_ref @$S18pointer_conversion11sideEffect1SiyF
   // CHECK:   [[RESULT1:%.*]] = apply [[SIDE1]]()
   // CHECK:   [[T0:%.*]] = select_enum [[COPY]]
@@ -405,8 +400,7 @@ func optStringToOptPointer(string: String?) {
   // CHECK:   [[TAKES:%.*]] = function_ref @$S18pointer_conversion23takesOptConstRawPointer_3andySVSg_SitF
   // CHECK:   apply [[TAKES]]([[OPTDEP]], [[RESULT1]])
   // CHECK:   destroy_value [[OWNER]]
-  // CHECK:   end_borrow [[BORROW]]
-  // CHECK:   destroy_value %0
+  // CHECK-NOT:   destroy_value %0
   // CHECK: [[NONE_BB]]:
   // CHECK:   [[NO_VALUE:%.*]] = enum $Optional<UnsafeRawPointer>, #Optional.none
   // CHECK:   [[NO_OWNER:%.*]] = enum $Optional<AnyObject>, #Optional.none
@@ -416,8 +410,7 @@ func optStringToOptPointer(string: String?) {
 
 // CHECK-LABEL: sil hidden @$S18pointer_conversion014optOptStringTodD7Pointer6stringySSSgSg_tF
 func optOptStringToOptOptPointer(string: String??) {
-  // CHECK:   [[BORROW:%.*]] = begin_borrow %0
-  // CHECK:   [[COPY:%.*]] = copy_value [[BORROW]]
+  // CHECK:   [[COPY:%.*]] = copy_value %0
   // CHECK:   [[SIDE1:%.*]] = function_ref @$S18pointer_conversion11sideEffect1SiyF
   // CHECK:   [[RESULT1:%.*]] = apply [[SIDE1]]()
   // CHECK:   [[T0:%.*]] = select_enum [[COPY]]

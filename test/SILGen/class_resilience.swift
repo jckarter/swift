@@ -23,10 +23,9 @@ public class MyResilientClass {
 // directly
 
 // CHECK-LABEL: sil @$S16class_resilience19finalPropertyOfMineyyAA16MyResilientClassCF
-// CHECK: bb0([[ARG:%.*]] : @owned $MyResilientClass):
-// CHECK:   [[BORROWED_ARG:%.*]] = begin_borrow [[ARG]]
-// CHECK:   ref_element_addr [[BORROWED_ARG]] : $MyResilientClass, #MyResilientClass.finalProperty
-// CHECK:   end_borrow [[BORROWED_ARG]] from [[ARG]]
+// CHECK: bb0([[ARG:%.*]] : @guaranteed $MyResilientClass):
+// CHECK:   ref_element_addr [[ARG]] : $MyResilientClass, #MyResilientClass.finalProperty
+// CHECK: } // end sil function '$S16class_resilience19finalPropertyOfMineyyAA16MyResilientClassCF'
 
 public func finalPropertyOfMine(_ other: MyResilientClass) {
   _ = other.finalProperty

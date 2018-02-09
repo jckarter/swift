@@ -6,13 +6,13 @@ enum HasAnyCase {
   case any(_: Any)
 }
 
-// CHECK-LABEL: sil hidden @$S23argument_shuffle_swift31g1xyyp_tF : $@convention(thin) (@in Any) -> () {
+// CHECK-LABEL: sil hidden @$S23argument_shuffle_swift31g1xyyp_tF : $@convention(thin) (@in_guaranteed Any) -> () {
 func g(x: Any) {
-  // CHECK: [[FN:%.*]] = function_ref @$S23argument_shuffle_swift32fnyyypF : $@convention(thin) (@in Any) -> ()
-  // CHECK: apply [[FN:%.*]]({{.*}}) : $@convention(thin) (@in Any) -> ()
+  // CHECK: [[FN:%.*]] = function_ref @$S23argument_shuffle_swift32fnyyypF : $@convention(thin) (@in_guaranteed Any) -> ()
+  // CHECK: apply [[FN:%.*]]({{.*}}) : $@convention(thin) (@in_guaranteed Any) -> ()
   fn(data: 123)
-  // CHECK: [[FN:%.*]] = function_ref @$S23argument_shuffle_swift32fnyyypF : $@convention(thin) (@in Any) -> ()
-  // CHECK: apply [[FN:%.*]]({{.*}}) : $@convention(thin) (@in Any) -> ()
+  // CHECK: [[FN:%.*]] = function_ref @$S23argument_shuffle_swift32fnyyypF : $@convention(thin) (@in_guaranteed Any) -> ()
+  // CHECK: apply [[FN:%.*]]({{.*}}) : $@convention(thin) (@in_guaranteed Any) -> ()
   fn(data: x)
 
   // CHECK: inject_enum_addr {{.*}} : $*HasAnyCase, #HasAnyCase.any!enumelt.1

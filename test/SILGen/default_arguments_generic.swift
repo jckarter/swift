@@ -49,7 +49,7 @@ func testInitializable() {
 
 // Local generic functions with default arguments
 
-// CHECK-LABEL: sil hidden @$S25default_arguments_generic5outer1tyx_tlF : $@convention(thin) <T> (@in T) -> ()
+// CHECK-LABEL: sil hidden @$S25default_arguments_generic5outer1tyx_tlF : $@convention(thin) <T> (@in_guaranteed T) -> ()
 func outer<T>(t: T) {
   func inner1(x: Int = 0) {}
 

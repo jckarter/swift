@@ -20,7 +20,7 @@ class Hoozit : Gizmo {
   func incorrige() {}
 }
 
-// CHECK-LABEL: sil hidden @$S12vtables_objc10callHoozityyAA0D0CF : $@convention(thin) (@owned Hoozit) -> ()
+// CHECK-LABEL: sil hidden @$S12vtables_objc10callHoozityyAA0D0CF : $@convention(thin) (@guaranteed Hoozit) -> ()
 func callHoozit(_ h: Hoozit) {
   // CHECK: objc_method {{.*}} : $Hoozit, #Hoozit.frob!1.foreign
   h.frob()
@@ -42,7 +42,7 @@ class Wotsit : Hoozit {
   final override func frob() {}
 }
 
-// CHECK-LABEL: sil hidden @$S12vtables_objc10callWotsityyAA0D0CF : $@convention(thin) (@owned Wotsit) -> ()
+// CHECK-LABEL: sil hidden @$S12vtables_objc10callWotsityyAA0D0CF : $@convention(thin) (@guaranteed Wotsit) -> ()
 func callWotsit(_ w: Wotsit) {
   // CHECK: objc_method {{.*}} : $Wotsit, #Wotsit.funge!1.foreign
   w.funge()

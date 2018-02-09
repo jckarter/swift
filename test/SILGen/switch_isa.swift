@@ -38,7 +38,7 @@ func testSwitchEnumOnExistential(_ value: Any) {
   }
 }
 
-// CHECK-LABEL: sil hidden @$S10switch_isa27testSwitchEnumOnExistentialyyypF : $@convention(thin) (@in Any) -> ()
+// CHECK-LABEL: sil hidden @$S10switch_isa27testSwitchEnumOnExistentialyyypF : $@convention(thin) (@in_guaranteed Any) -> ()
 // CHECK:   checked_cast_addr_br copy_on_success Any in {{%.*}} : $*Any to Foo
 // CHECK:   checked_cast_addr_br copy_on_success Any in {{%.*}} : $*Any to Bar<Int>
 // CHECK:   checked_cast_addr_br copy_on_success Any in {{%.*}} : $*Any to Bar<Foo>

@@ -13,7 +13,7 @@ do {
     func zim() {
       foo()
     }
-    // CHECK-LABEL: sil private @$S025nested_types_referencing_A10_functions3FooL_C4zangyyxlF : $@convention(method) <T> (@in T, @guaranteed Foo) -> ()
+    // CHECK-LABEL: sil private @$S025nested_types_referencing_A10_functions3FooL_C4zangyyxlF : $@convention(method) <T> (@in_guaranteed T, @guaranteed Foo) -> ()
     func zang<T>(_ x: T) {
       bar(x)
     }

@@ -17,36 +17,14 @@ import resilient_enum
 // CHECK-LABEL: define{{( protected)?}} swiftcc void @"$S17struct_resilience26functionWithResilientTypes_1f010resilient_A04SizeVAF_A2FXEtF"(%swift.opaque* noalias nocapture sret, %swift.opaque* noalias nocapture, i8*, %swift.opaque*)
 
 public func functionWithResilientTypes(_ s: Size, f: (Size) -> Size) -> Size {
-
-// CHECK: [[METADATA:%.*]] = call %swift.type* @"$S16resilient_struct4SizeVMa"()
-// CHECK: [[METADATA_ADDR:%.*]] = bitcast %swift.type* [[METADATA]] to i8***
-// CHECK: [[VWT_ADDR:%.*]] = getelementptr inbounds i8**, i8*** [[METADATA_ADDR]], [[INT]] -1
-// CHECK: [[VWT:%.*]] = load i8**, i8*** [[VWT_ADDR]]
-
-// CHECK: [[WITNESS_ADDR:%.*]] = getelementptr inbounds i8*, i8** [[VWT]], i32 9
-// CHECK: [[WITNESS:%.*]] = load i8*, i8** [[WITNESS_ADDR]]
-// CHECK: [[WITNESS_FOR_SIZE:%.*]] = ptrtoint i8* [[WITNESS]]
-// CHECK: [[ALLOCA:%.*]] = alloca i8, {{.*}} [[WITNESS_FOR_SIZE]], align 16
-// CHECK: [[STRUCT_ADDR:%.*]] = bitcast i8* [[ALLOCA]] to %swift.opaque*
-
-// CHECK: [[WITNESS_PTR:%.*]] = getelementptr inbounds i8*, i8** [[VWT]], i32 2
-// CHECK: [[WITNESS:%.*]] = load i8*, i8** [[WITNESS_PTR]]
-// CHECK: [[initializeWithCopy:%.*]] = bitcast i8* [[WITNESS]]
-// CHECK: [[STRUCT_LOC:%.*]] = call %swift.opaque* [[initializeWithCopy]](%swift.opaque* noalias [[STRUCT_ADDR]], %swift.opaque* noalias %1, %swift.type* [[METADATA]])
-
-// CHECK: [[FN:%.*]] = bitcast i8* %2 to void (%swift.opaque*, %swift.opaque*, %swift.refcounted*)*
-// CHECK: call swiftcc void [[FN]](%swift.opaque* noalias nocapture sret %0, %swift.opaque* noalias nocapture [[STRUCT_ADDR]], %swift.refcounted* swiftself %15)
-
-// CHECK: [[WITNESS_PTR:%.*]] = getelementptr inbounds i8*, i8** [[VWT]], i32 1
-// CHECK: [[WITNESS:%.*]] = load i8*, i8** [[WITNESS_PTR]]
-// CHECK: [[destroy:%.*]] = bitcast i8* [[WITNESS]] to void (%swift.opaque*, %swift.type*)*
-// CHECK: call void [[destroy]](%swift.opaque* noalias %1, %swift.type* [[METADATA]])
-// CHECK: ret void
+// CHECK: entry:
+// CHECK-NEXT: [[FN:%.*]] = bitcast i8* %2 to void (%swift.opaque*, %swift.opaque*, %swift.refcounted*)*
+// CHECK-NEXT: [[SELF:%.*]] = bitcast %swift.opaque* %3 to %swift.refcounted*
+// CHECK-NEXT: call swiftcc void [[FN]](%swift.opaque* noalias nocapture sret %0, %swift.opaque* noalias nocapture %1, %swift.refcounted* swiftself [[SELF]])
+// CHECK-NEXT: ret void
 
   return f(s)
 }
-
-// CHECK-LABEL: declare %swift.type* @"$S16resilient_struct4SizeVMa"()
 
 // Rectangle has fixed layout inside its resilience domain, and dynamic
 // layout on the outside.
@@ -70,10 +48,9 @@ public func functionWithResilientTypes(_ r: Rectangle) {
 
   _ = r.color
 
-// CHECK: ret void
+// CHECK-NEXT: ret void
 
 }
-
 
 // Resilient structs from inside our resilience domain are manipulated
 // directly.
@@ -85,19 +62,15 @@ public struct MySize {
 
 // CHECK-LABEL: define{{( protected)?}} swiftcc void @"$S17struct_resilience28functionWithMyResilientTypes_1fAA0E4SizeVAE_A2EXEtF"(%T17struct_resilience6MySizeV* {{.*}}, %T17struct_resilience6MySizeV* {{.*}}, i8*, %swift.opaque*)
 public func functionWithMyResilientTypes(_ s: MySize, f: (MySize) -> MySize) -> MySize {
-
-// CHECK: [[TEMP:%.*]] = alloca %T17struct_resilience6MySizeV
-// CHECK: bitcast
-// CHECK: llvm.lifetime.start
-// CHECK: [[COPY:%.*]] = bitcast %T17struct_resilience6MySizeV* %4 to i8*
-// CHECK: [[ARG:%.*]] = bitcast %T17struct_resilience6MySizeV* %1 to i8*
-// CHECK: call void @llvm.memcpy{{.*}}(i8* [[COPY]], i8* [[ARG]], {{i32 8|i64 16}}, i32 {{.*}}, i1 false)
-// CHECK: [[FN:%.*]] = bitcast i8* %2
-// CHECK: call swiftcc void [[FN]](%T17struct_resilience6MySizeV* {{.*}} %0, {{.*}} [[TEMP]], %swift.refcounted* swiftself %{{.*}})
-// CHECK: ret void
-
+// CHECK: entry:
+// CHECK-NEXT: [[FN:%.*]] = bitcast i8* %2
+// CHECK-NEXT: [[SELF:%.*]] = bitcast %swift.opaque* %3
+// CHECK-NEXT: call swiftcc void [[FN]](%T17struct_resilience6MySizeV* {{.*}} %0, {{.*}} %1, %swift.refcounted* swiftself [[SELF]])
+// CHECK-NEXT: ret void
   return f(s)
 }
+
+// CHECK-LABEL: declare %swift.type* @"$S16resilient_struct4SizeVMa"()
 
 // Structs with resilient storage from a different resilience domain require
 // runtime metadata instantiation, just like generics.

@@ -189,7 +189,7 @@ public class GenericDerived<T> : GenericBase<T> {
     }
     localFunction()
 
-    // CHECK-LABEL: sil private @$S5super14GenericDerivedC6methodyyF15genericFunctionL_yyqd__r__lF : $@convention(thin) <T><U> (@in U, @guaranteed GenericDerived<T>) -> ()
+    // CHECK-LABEL: sil private @$S5super14GenericDerivedC6methodyyF15genericFunctionL_yyqd__r__lF : $@convention(thin) <T><U> (@in_guaranteed U, @guaranteed GenericDerived<T>) -> ()
     // CHECK: upcast {{.*}} : $GenericDerived<T> to $GenericBase<T>
     // CHECK: return
     func genericFunction<U>(_: U) {

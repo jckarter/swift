@@ -50,7 +50,7 @@ func protocolTypeof(_ x: Bas) -> Bas.Type {
   // CHECK: [[METATYPE:%.*]] = call %swift.type* @swift_getDynamicType(%swift.opaque* [[VALUE_ADDR]], %swift.type* [[METADATA]], i1 true)
   // CHECK: [[WTABLE_ADDR:%.*]] = getelementptr inbounds %T17generic_metatypes3BasP, %T17generic_metatypes3BasP* %0, i32 0, i32 2
   // CHECK: [[WTABLE:%.*]] = load i8**, i8*** [[WTABLE_ADDR]]
-  // CHECK: call void @__swift_destroy_boxed_opaque_existential_1(%T17generic_metatypes3BasP* %0)
+  // CHECK-NOT: call void @__swift_destroy_boxed_opaque_existential_1(%T17generic_metatypes3BasP* %0)
   // CHECK: [[T0:%.*]] = insertvalue { %swift.type*, i8** } undef, %swift.type* [[METATYPE]], 0
   // CHECK: [[T1:%.*]] = insertvalue { %swift.type*, i8** } [[T0]], i8** [[WTABLE]], 1
   // CHECK: ret { %swift.type*, i8** } [[T1]]

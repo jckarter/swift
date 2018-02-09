@@ -26,6 +26,6 @@ func closure_generic<T>(_ f: @escaping (T) -> T, x: T) -> T {
 
   return bar(x)
 }
-// CHECK-LABEL: sil private @$S19capture_typed_boxes15closure_generic{{.*}} : $@convention(thin) <T> (@in T, @guaranteed <τ_0_0> { var @callee_guaranteed (@in τ_0_0) -> @out τ_0_0 } <T>) -> @out T {
-// CHECK-LABEL: bb0(%0 : @trivial $*T, %1 : @trivial $*T, %2 : @guaranteed $<τ_0_0> { var @callee_guaranteed (@in τ_0_0) -> @out τ_0_0 } <T>):
+// CHECK-LABEL: sil private @$S19capture_typed_boxes15closure_generic{{.*}} : $@convention(thin) <T> (@in_guaranteed T, @guaranteed <τ_0_0> { var @callee_guaranteed (@in_guaranteed τ_0_0) -> @out τ_0_0 } <T>) -> @out T {
+// CHECK-LABEL: bb0(%0 : @trivial $*T, %1 : @trivial $*T, %2 : @guaranteed $<τ_0_0> { var @callee_guaranteed (@in_guaranteed τ_0_0) -> @out τ_0_0 } <T>):
 

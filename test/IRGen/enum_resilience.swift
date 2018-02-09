@@ -69,9 +69,10 @@ public func functionWithResilientEnum(_ m: Medium) -> Medium {
 // CHECK-NEXT: [[METADATA_ADDR:%.*]] = bitcast %swift.type* [[METADATA]] to i8***
 // CHECK-NEXT: [[VWT_ADDR:%.*]] = getelementptr inbounds i8**, i8*** [[METADATA_ADDR]], [[INT:i32|i64]] -1
 // CHECK-NEXT: [[VWT:%.*]] = load i8**, i8*** [[VWT_ADDR]]
-// CHECK-NEXT: [[WITNESS_ADDR:%.*]] = getelementptr inbounds i8*, i8** [[VWT]], i32 4
+// This is copying the +0 argument to be used as a return value.
+// CHECK-NEXT: [[WITNESS_ADDR:%.*]] = getelementptr inbounds i8*, i8** [[VWT]], i32 2
 // CHECK-NEXT: [[WITNESS:%.*]]  = load i8*, i8** [[WITNESS_ADDR]]
-// CHECK-NEXT: [[WITNESS_FN:%.*]] = bitcast i8* [[WITNESS]]
+// CHECK-NEXT: [[WITNESS_FN:%initializeWithCopy]] = bitcast i8* [[WITNESS]]
 // CHECK-NEXT: call %swift.opaque* [[WITNESS_FN]](%swift.opaque* noalias %0, %swift.opaque* noalias %1, %swift.type* [[METADATA]])
 // CHECK-NEXT: ret void
 
@@ -85,9 +86,10 @@ public func functionWithIndirectResilientEnum(_ ia: IndirectApproach) -> Indirec
 // CHECK-NEXT: [[METADATA_ADDR:%.*]] = bitcast %swift.type* [[METADATA]] to i8***
 // CHECK-NEXT: [[VWT_ADDR:%.*]] = getelementptr inbounds i8**, i8*** [[METADATA_ADDR]], [[INT:i32|i64]] -1
 // CHECK-NEXT: [[VWT:%.*]] = load i8**, i8*** [[VWT_ADDR]]
-// CHECK-NEXT: [[WITNESS_ADDR:%.*]] = getelementptr inbounds i8*, i8** [[VWT]], i32 4
+// This is copying the +0 argument into the return slot.
+// CHECK-NEXT: [[WITNESS_ADDR:%.*]] = getelementptr inbounds i8*, i8** [[VWT]], i32 2
 // CHECK-NEXT: [[WITNESS:%.*]]  = load i8*, i8** [[WITNESS_ADDR]]
-// CHECK-NEXT: [[WITNESS_FN:%.*]] = bitcast i8* [[WITNESS]]
+// CHECK-NEXT: [[WITNESS_FN:%initializeWithCopy]] = bitcast i8* [[WITNESS]]
 // CHECK-NEXT: call %swift.opaque* [[WITNESS_FN]](%swift.opaque* noalias %0, %swift.opaque* noalias %1, %swift.type* [[METADATA]])
 // CHECK-NEXT: ret void
 
@@ -119,8 +121,8 @@ public func constructResilientEnumPayload(_ s: Size) -> Medium {
 
 // CHECK-NEXT: [[WITNESS_ADDR:%.*]] = getelementptr inbounds i8*, i8** [[VWT]], i32 2
 // CHECK-NEXT: [[WITNESS:%.*]]  = load i8*, i8** [[WITNESS_ADDR]]
-// CHECK-NEXT: [[WITNESS_FN:%.*]] = bitcast i8* [[WITNESS]]
-// CHECK-NEXT: [[COPY:%.*]] = call %swift.opaque* %initializeWithCopy(%swift.opaque* noalias %0, %swift.opaque* noalias %1, %swift.type* [[METADATA]])
+// CHECK-NEXT: [[WITNESS_FN:%initializeWithCopy]] = bitcast i8* [[WITNESS]]
+// CHECK-NEXT: [[COPY:%.*]] = call %swift.opaque* [[WITNESS_FN]](%swift.opaque* noalias %0, %swift.opaque* noalias %1, %swift.type* [[METADATA]])
 
 // CHECK-NEXT: [[METADATA2:%.*]] = call %swift.type* @"$S14resilient_enum6MediumOMa"()
 // CHECK-NEXT: [[METADATA_ADDR2:%.*]] = bitcast %swift.type* [[METADATA2]] to i8***
@@ -129,15 +131,10 @@ public func constructResilientEnumPayload(_ s: Size) -> Medium {
 
 // CHECK-NEXT: [[WITNESS_ADDR:%.*]] = getelementptr inbounds i8*, i8** [[VWT2]], i32 17
 // CHECK-NEXT: [[WITNESS:%.*]] = load i8*, i8** [[WITNESS_ADDR]]
-// CHECK-NEXT: [[WITNESS_FN:%.*]] = bitcast i8* [[WITNESS]]
+// CHECK-NEXT: [[WITNESS_FN:%destructiveInjectEnumTag]] = bitcast i8* [[WITNESS]]
 // CHECK-NEXT: call void [[WITNESS_FN]](%swift.opaque* noalias %0, i32 -2, %swift.type* [[METADATA2]])
-
-// CHECK-NEXT: [[WITNESS_ADDR:%.*]] = getelementptr inbounds i8*, i8** [[VWT]], i32 1
-// CHECK-NEXT: [[WITNESS:%.*]] = load i8*, i8** [[WITNESS_ADDR]]
-// CHECK-NEXT: [[WITNESS_FN:%.*]] = bitcast i8* [[WITNESS]]
-// CHECK-NEXT: call void [[WITNESS_FN]](%swift.opaque* noalias %1, %swift.type* [[METADATA]])
-
 // CHECK-NEXT: ret void
+
   return Medium.Postcard(s)
 }
 
@@ -149,21 +146,20 @@ public func constructResilientEnumPayload(_ s: Size) -> Medium {
 
 // CHECK: [[WITNESS_ADDR:%.*]] = getelementptr inbounds i8*, i8** [[VWT]], i32 9
 // CHECK: [[WITNESS:%.*]] = load i8*, i8** [[WITNESS_ADDR]]
-// CHECK: [[WITNESS_FOR_SIZE:%.*]] = ptrtoint i8* [[WITNESS]]
-// CHECK: [[ALLOCA:%.*]] = alloca i8, {{.*}} [[WITNESS_FOR_SIZE]], align 16
+// CHECK: [[WITNESS_FOR_SIZE:%size]] = ptrtoint i8* [[WITNESS]]
 // CHECK: [[ALLOCA:%.*]] = alloca i8, {{.*}} [[WITNESS_FOR_SIZE]], align 16
 // CHECK: [[ALLOCA:%.*]] = alloca i8, {{.*}} [[WITNESS_FOR_SIZE]], align 16
 // CHECK: [[ENUM_STORAGE:%.*]] = bitcast i8* [[ALLOCA]] to %swift.opaque*
 
 // CHECK: [[WITNESS_ADDR:%.*]] = getelementptr inbounds i8*, i8** [[VWT]], i32 2
 // CHECK: [[WITNESS:%.*]] = load i8*, i8** [[WITNESS_ADDR]]
-// CHECK: [[WITNESS_FN:%.*]] = bitcast i8* [[WITNESS]]
+// CHECK: [[WITNESS_FN:%initializeWithCopy]] = bitcast i8* [[WITNESS]]
 // CHECK: [[ENUM_COPY:%.*]] = call %swift.opaque* [[WITNESS_FN]](%swift.opaque* noalias [[ENUM_STORAGE]], %swift.opaque* noalias %0, %swift.type* [[METADATA]])
 
 // CHECK: [[WITNESS_ADDR:%.*]] = getelementptr inbounds i8*, i8** [[VWT]], i32 15
 // CHECK: [[WITNESS:%.*]] = load i8*, i8** [[WITNESS_ADDR]]
-// CHECK: [[WITNESS_FN:%.*]] = bitcast i8* [[WITNESS]]
-// CHECK: [[TAG:%.*]] = call i32 %getEnumTag(%swift.opaque* noalias [[ENUM_STORAGE]], %swift.type* [[METADATA]])
+// CHECK: [[WITNESS_FN:%getEnumTag]] = bitcast i8* [[WITNESS]]
+// CHECK: [[TAG:%.*]] = call i32 [[WITNESS_FN]](%swift.opaque* noalias [[ENUM_STORAGE]], %swift.type* [[METADATA]])
 
 // CHECK: switch i32 [[TAG]], label %[[DEFAULT_CASE:.*]] [
 // CHECK:   i32 -1, label %[[PAMPHLET_CASE:.*]]
@@ -205,13 +201,13 @@ public func reabstraction<T>(_ f: (Medium) -> T) {}
 public func resilientEnumPartialApply(_ f: (Medium) -> Int) {
 
 // CHECK:     [[CONTEXT:%.*]] = call noalias %swift.refcounted* @swift_allocObject
-// CHECK:     call swiftcc void @"$S15enum_resilience13reabstractionyyx010resilient_A06MediumOXElF"(i8* bitcast (void (%TSi*, %swift.opaque*, %swift.refcounted*)* @"$S14resilient_enum6MediumOSiIgid_ACSiIegir_TRTA" to i8*), %swift.opaque* [[CONTEXT:%.*]], %swift.type* @"$SSiN")
+// CHECK:     call swiftcc void @"$S15enum_resilience13reabstractionyyx010resilient_A06MediumOXElF"(i8* bitcast (void (%TSi*, %swift.opaque*, %swift.refcounted*)* @"$S14resilient_enum6MediumOSiIgnd_ACSiIegnr_TRTA" to i8*), %swift.opaque* [[CONTEXT:%.*]], %swift.type* @"$SSiN")
   reabstraction(f)
 
 // CHECK:     ret void
 }
 
-// CHECK-LABEL: define internal swiftcc void @"$S14resilient_enum6MediumOSiIgid_ACSiIegir_TRTA"(%TSi* noalias nocapture sret, %swift.opaque* noalias nocapture, %swift.refcounted* swiftself)
+// CHECK-LABEL: define internal swiftcc void @"$S14resilient_enum6MediumOSiIgnd_ACSiIegnr_TRTA"(%TSi* noalias nocapture sret, %swift.opaque* noalias nocapture, %swift.refcounted* swiftself)
 
 
 // Enums with resilient payloads from a different resilience domain

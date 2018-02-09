@@ -44,7 +44,7 @@ let bigStructGlobalArray : [BigStruct] = [
   BigStruct()
 ]
 
-// CHECK-LABEL: define{{( protected)?}} internal swiftcc void @"$S22big_types_corner_cases21OptionalInoutFuncTypeC7executeyys5Error_pSgFyyXEfU_"(%T22big_types_corner_cases9BigStructVSg* nocapture dereferenceable({{.*}}), %T22big_types_corner_cases21OptionalInoutFuncTypeC*, %T22big_types_corner_cases9BigStructVSgs5Error_pSgIegcx_Sg* nocapture dereferenceable({{.*}})
+// CHECK-LABEL: define{{( protected)?}} internal swiftcc void @"$S22big_types_corner_cases21OptionalInoutFuncTypeC7executeyys5Error_pSgFyyXEfU_"(%T22big_types_corner_cases9BigStructVSg* nocapture dereferenceable({{.*}}), %T22big_types_corner_cases21OptionalInoutFuncTypeC*, %T22big_types_corner_cases9BigStructVSgs5Error_pSgIegcg_Sg* nocapture dereferenceable({{.*}})
 // CHECK: call void @"$SSqWy
 // CHECK: call void @"$SSqWe
 // CHECK: ret void
@@ -208,7 +208,7 @@ public func testGetFunc() {
 // CHECK-LABEL: define{{( protected)?}} hidden swiftcc void @"$S22big_types_corner_cases7TestBigC4testyyF"(%T22big_types_corner_cases7TestBigC* swiftself)
 // CHECK: [[CALL1:%.*]] = call %swift.type* @"$SSayy22big_types_corner_cases9BigStructVcSgGMa"
 // CHECK: [[CALL2:%.*]] = call i8** @"$SSayy22big_types_corner_cases9BigStructVcSgGSayxGs10CollectionsWl
-// CHECK: call swiftcc void @"$Ss10CollectionPsE5index5where5IndexQzSgSb7ElementQzKXE_tKF"(%TSq.{{.*}}* noalias nocapture sret {{.*}}, i8* bitcast (i1 (%T22big_types_corner_cases9BigStructVytIegir_Sg*, %swift.refcounted*, %swift.error**)* @"$S22big_types_corner_cases9BigStructVIegy_SgSbs5Error_pIgxdzo_ACytIegir_SgSbsAE_pIegidzo_TRTA" to i8*), %swift.opaque* {{.*}}, %swift.type* [[CALL1]], i8** [[CALL2]], %swift.opaque* noalias nocapture swiftself
+// CHECK: call swiftcc void @"$Ss10CollectionPsE5index5where5IndexQzSgSb7ElementQzKXE_tKF"(%TSq.{{.*}}* noalias nocapture sret {{.*}}, i8* bitcast (i1 (%T22big_types_corner_cases9BigStructVytIegnr_Sg*, %swift.refcounted*, %swift.error**)* @"$S22big_types_corner_cases9BigStructVIegy_SgSbs5Error_pIggdzo_ACytIegnr_SgSbsAE_pIegndzo_TRTA" to i8*), %swift.opaque* {{.*}}, %swift.type* [[CALL1]], i8** [[CALL2]], %swift.opaque* noalias nocapture swiftself
 // CHECK: ret void
 
 // CHECK-LABEL: define{{( protected)?}} hidden swiftcc void @"$S22big_types_corner_cases7TestBigC5test2yyF"(%T22big_types_corner_cases7TestBigC* swiftself)

@@ -115,7 +115,7 @@ func protocolMetatype(p: FooProto) -> FooProto.Type {
   // CHECK: [[RAW_RESULT:%.+]] = call i8* @processFooType(i8* {{%.+}})
   // CHECK: [[CASTED_RESULT:%.+]] = bitcast i8* [[RAW_RESULT]] to %objc_class*
   // CHECK: [[SWIFT_RESULT:%.+]] = call %swift.type* @swift_getObjCClassMetadata(%objc_class* [[CASTED_RESULT]])
-  // CHECK: call void @swift_unknownRelease(%objc_object* %0)
+  // CHECK-NOT: call void @swift_unknownRelease(%objc_object* %0)
   // CHECK: ret %swift.type* [[SWIFT_RESULT]]
   let type = processFooType(type(of: p))
   return type
@@ -132,7 +132,7 @@ func protocolCompositionMetatype(p: Impl) -> (FooProto & AnotherProto).Type {
   // CHECK: [[RAW_RESULT:%.+]] = call i8* @processComboType(i8* {{%.+}})
   // CHECK: [[CASTED_RESULT:%.+]] = bitcast i8* [[RAW_RESULT]] to %objc_class*
   // CHECK: [[SWIFT_RESULT:%.+]] = call %swift.type* @swift_getObjCClassMetadata(%objc_class* [[CASTED_RESULT]])
-  // CHECK: call void bitcast (void (%swift.refcounted*)* @swift_release to void (%T7objc_ir4ImplC*)*)(%T7objc_ir4ImplC* %0)
+  // CHECK-NOT: call void bitcast (void (%swift.refcounted*)* @swift_release to void (%T7objc_ir4ImplC*)*)(%T7objc_ir4ImplC* %0)
   // CHECK: ret %swift.type* [[SWIFT_RESULT]]
   let type = processComboType(type(of: p))
   return type
@@ -145,7 +145,7 @@ func protocolCompositionMetatype2(p: Impl) -> (FooProto & AnotherProto).Type {
   // CHECK: [[RAW_RESULT:%.+]] = call i8* @processComboType2(i8* {{%.+}})
   // CHECK: [[CASTED_RESULT:%.+]] = bitcast i8* [[RAW_RESULT]] to %objc_class*
   // CHECK: [[SWIFT_RESULT:%.+]] = call %swift.type* @swift_getObjCClassMetadata(%objc_class* [[CASTED_RESULT]])
-  // CHECK: call void bitcast (void (%swift.refcounted*)* @swift_release to void (%T7objc_ir4ImplC*)*)(%T7objc_ir4ImplC* %0)
+  // CHECK-NOT: @swift_release
   // CHECK: ret %swift.type* [[SWIFT_RESULT]]
   let type = processComboType2(type(of: p))
   return type

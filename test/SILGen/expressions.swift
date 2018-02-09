@@ -559,13 +559,9 @@ func dynamicTypePlusZero(_ a: Super1) -> Super1.Type {
   return type(of: a)
 }
 // CHECK-LABEL: dynamicTypePlusZero
-// CHECK: bb0([[ARG:%.*]] : @owned $Super1):
+// CHECK: bb0([[ARG:%.*]] : @guaranteed $Super1):
 // CHECK-NOT: copy_value
-// CHECK: [[BORROWED_ARG:%.*]] = begin_borrow [[ARG]]
-// CHECK-NOT: copy_value
-// CHECK: value_metatype  $@thick Super1.Type, [[BORROWED_ARG]] : $Super1
-// CHECK: end_borrow [[BORROWED_ARG]] from [[ARG]]
-// CHECK: destroy_value [[ARG]]
+// CHECK: value_metatype  $@thick Super1.Type, [[ARG]] : $Super1
 
 struct NonTrivialStruct {
   var c : Super1
@@ -579,13 +575,10 @@ func dontEmitIgnoredLoadExpr(_ a: NonTrivialStruct) -> NonTrivialStruct.Type {
   return type(of: a)
 }
 // CHECK-LABEL: dontEmitIgnoredLoadExpr
-// CHECK: bb0(%0 : @owned $NonTrivialStruct):
+// CHECK: bb0(%0 : @guaranteed $NonTrivialStruct):
 // CHECK-NEXT: debug_value
-// CHECK-NEXT: begin_borrow
-// CHECK-NEXT: end_borrow
-// CHECK-NEXT: %4 = metatype $@thin NonTrivialStruct.Type
-// CHECK-NEXT: destroy_value %0
-// CHECK-NEXT: return %4 : $@thin NonTrivialStruct.Type
+// CHECK-NEXT: [[RESULT:%.*]] = metatype $@thin NonTrivialStruct.Type
+// CHECK-NEXT: return [[RESULT]] : $@thin NonTrivialStruct.Type
 
 // Test that we evaluate the force unwrap to get its side effects (a potential trap),
 // but don't actually need to perform the load of its value.

@@ -129,7 +129,6 @@ func opaque_existential_to_opaque_archetype
   // CHECK-NEXT: copy_addr [[ARG]] to [initialization] [[TEMP]]
   // CHECK-NEXT: unconditional_checked_cast_addr NotClassBound in [[TEMP]] : $*NotClassBound to T in [[RET]] : $*T
   // CHECK-NEXT: dealloc_stack [[TEMP]]
-  // CHECK-NEXT: destroy_addr [[ARG]]
   // CHECK-NEXT: [[T0:%.*]] = tuple ()
   // CHECK-NEXT: return [[T0]]
 }

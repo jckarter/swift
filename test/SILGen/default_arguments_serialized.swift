@@ -25,7 +25,7 @@ public func hasDefaultArguments(x: Int = 0, y: String = defaultString()) {}
 // CHECK-LABEL: sil @$S28default_arguments_serialized21callsDefaultArgumentsyyF : $@convention(thin) () -> ()
 // CHECK: function_ref @$S28default_arguments_serialized19hasDefaultArguments1x1yySi_SStFfA_ : $@convention(thin) () -> Int
 // CHECK: function_ref @$S28default_arguments_serialized19hasDefaultArguments1x1yySi_SStFfA0_ : $@convention(thin) () -> @owned String
-// CHECK: function_ref @$S28default_arguments_serialized19hasDefaultArguments1x1yySi_SStF : $@convention(thin) (Int, @owned String) -> ()
+// CHECK: function_ref @$S28default_arguments_serialized19hasDefaultArguments1x1yySi_SStF : $@convention(thin) (Int, @guaranteed String) -> ()
 // CHECK: apply
 // CHECK: return
 public func callsDefaultArguments() {
