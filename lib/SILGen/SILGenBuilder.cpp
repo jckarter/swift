@@ -833,3 +833,10 @@ ManagedValue SILGenBuilder::createTuple(SILLocation loc, SILType type,
             });
   return cloner.clone(createTuple(loc, type, forwardedValues));
 }
+
+ManagedValue SILGenBuilder::createUncheckedAddrCast(SILLocation loc, ManagedValue op,
+                                                    SILType resultTy) {
+  CleanupCloner cloner(*this, op);
+  SILValue cast = createUncheckedAddrCast(loc, op.forward(SGF), resultTy);
+  return cloner.clone(cast);
+}
