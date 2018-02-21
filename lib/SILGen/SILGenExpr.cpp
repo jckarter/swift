@@ -23,6 +23,7 @@
 #include "ResultPlan.h"
 #include "SILGenDynamicCast.h"
 #include "Scope.h"
+#include "SwitchEnumBuilder.h"
 #include "Varargs.h"
 #include "swift/AST/ASTContext.h"
 #include "swift/AST/Decl.h"
@@ -4137,6 +4138,9 @@ RValue RValueEmitter::visitCollectionExpr(CollectionExpr *E, SGFContext C) {
 /// Flattens one level of optional from a nested optional value.
 static ManagedValue flattenOptional(SILGenFunction &SGF, SILLocation loc,
                                     ManagedValue optVal) {
+  // This code assumes that we have a +1 value.
+  assert(optVal.isPlusOne(SGF));
+
   // FIXME: Largely copied from SILGenFunction::emitOptionalToOptional.
   auto contBB = SGF.createBasicBlock();
   auto isNotPresentBB = SGF.createBasicBlock();
@@ -4147,78 +4151,54 @@ static ManagedValue flattenOptional(SILGenFunction &SGF, SILLocation loc,
   assert(resultTy.getSwiftRValueType().getOptionalObjectType() &&
          "input was not a nested optional value");
 
-  SILValue result;
+  SILValue contBBArg;
+  TemporaryInitializationPtr addrOnlyResultBuf;
   if (resultTL.isAddressOnly()) {
-    
+    addrOnlyResultBuf = SGF.emitTemporary(loc, resultTL);
+  } else {
+    contBBArg = contBB->createPHIArgument(resultTy, ValueOwnershipKind::Owned);
   }
 
   SwitchEnumBuilder SEB(SGF.B, loc, optVal);
 
-  SEB.addCase(getASTContext().getOptionalSomeDecl(), isPresentBB, contBB,
+  auto *someDecl = SGF.getASTContext().getOptionalSomeDecl();
+  SEB.addCase(someDecl, isPresentBB, contBB,
               [&](ManagedValue input, SwitchCaseFullExpr &scope) {
-                if (resultTL.isAddressOnly() &&
-                    silConv.useLoweredAddresses()) {
-                  auto *someDecl = getASTContext().getOptionalSomeDecl();
-                  input = B.createUncheckedTakeEnumDataAddr(
+                if (resultTL.isAddressOnly()) {
+		  SILValue addr =
+		    addrOnlyResultBuf->getAddressForInPlaceInitialization(SGF, loc);
+                  input = SGF.B.createUncheckedTakeEnumDataAddr(
                       loc, input, someDecl, input.getType().getOptionalObjectType());
+                  SGF.B.createCopyAddr(loc, input.getValue(), addr, IsNotTake,
+				       IsInitialization);
+                  scope.exitAndBranch(loc);
+                  return;
                 }
-                
+                scope.exitAndBranch(loc, input.forward(SGF));
               });
-  SEB.addCase(getASTContext().getOptionalNoneDecl(), isNotPresentBB, contBB,
+  SEB.addCase(SGF.getASTContext().getOptionalNoneDecl(), isNotPresentBB, contBB,
               [&](ManagedValue input, SwitchCaseFullExpr &scope) {
+                if (resultTL.isAddressOnly()) {
+                  SILValue addr =
+		    addrOnlyResultBuf->getAddressForInPlaceInitialization(SGF, loc);
+                  SGF.emitInjectOptionalNothingInto(loc, addr, resultTL);
+                  scope.exitAndBranch(loc);
+                  return;
+                }
 
+                auto mv =
+                    SGF.B.createManagedOptionalNone(loc, resultTy).forward(SGF);
+                scope.exitAndBranch(loc, mv);
               });
-  // If the result is address-only, we need to return something in memory,
-  // otherwise the result is the BBArgument in the merge point.
-  SILValue result;
-  if (resultTL.isAddressOnly())
-    result = SGF.emitTemporaryAllocation(loc, resultTy);
-  else
-    result = contBB->createPHIArgument(resultTy, ValueOwnershipKind::Owned);
-
-  // Branch on whether the input is optional, this doesn't consume the value.
-  auto isPresent = SGF.emitDoesOptionalHaveValue(loc, optVal.getValue());
-  SGF.B.createCondBranch(loc, isPresent, isPresentBB, isNotPresentBB);
-
-  // If it's present, apply the recursive transformation to the value.
-  SGF.B.emitBlock(isPresentBB);
-  SILValue branchArg;
-  {
-    // Don't allow cleanups to escape the conditional block.
-    FullExpr presentScope(SGF.Cleanups, CleanupLocation::get(loc));
-
-    // Pull the value out.  This will load if the value is not address-only.
-    auto &inputTL = SGF.getTypeLowering(optVal.getType());
-    auto resultValue = SGF.emitUncheckedGetOptionalValueFrom(loc, optVal,
-                                                             inputTL);
-
-    // Inject that into the result type if the result is address-only.
-    if (resultTL.isAddressOnly())
-      resultValue.forwardInto(SGF, loc, result);
-    else
-      branchArg = resultValue.forward(SGF);
-  }
-  if (branchArg)
-    SGF.B.createBranch(loc, contBB, branchArg);
-  else
-    SGF.B.createBranch(loc, contBB);
-
-  // If it's not present, inject 'nothing' into the result.
-  SGF.B.emitBlock(isNotPresentBB);
-  if (resultTL.isAddressOnly()) {
-    SGF.emitInjectOptionalNothingInto(loc, result, resultTL);
-    SGF.B.createBranch(loc, contBB);
-  } else {
-    branchArg = SGF.getOptionalNoneValue(loc, resultTL);
-    SGF.B.createBranch(loc, contBB, branchArg);
-  }
+  std::move(SEB).emit();
 
   // Continue.
   SGF.B.emitBlock(contBB);
-  if (resultTL.isAddressOnly())
-    return SGF.emitManagedBufferWithCleanup(result, resultTL);
-
-  return SGF.emitManagedRValueWithCleanup(result, resultTL);
+  if (resultTL.isAddressOnly()) {
+    addrOnlyResultBuf->finishInitialization(SGF);
+    return addrOnlyResultBuf->getManagedAddress();
+  }
+  return SGF.emitManagedRValueWithCleanup(contBBArg, resultTL);
 }
 
 static ManagedValue
