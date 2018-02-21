@@ -4147,6 +4147,27 @@ static ManagedValue flattenOptional(SILGenFunction &SGF, SILLocation loc,
   assert(resultTy.getSwiftRValueType().getOptionalObjectType() &&
          "input was not a nested optional value");
 
+  SILValue result;
+  if (resultTL.isAddressOnly()) {
+    
+  }
+
+  SwitchEnumBuilder SEB(SGF.B, loc, optVal);
+
+  SEB.addCase(getASTContext().getOptionalSomeDecl(), isPresentBB, contBB,
+              [&](ManagedValue input, SwitchCaseFullExpr &scope) {
+                if (resultTL.isAddressOnly() &&
+                    silConv.useLoweredAddresses()) {
+                  auto *someDecl = getASTContext().getOptionalSomeDecl();
+                  input = B.createUncheckedTakeEnumDataAddr(
+                      loc, input, someDecl, input.getType().getOptionalObjectType());
+                }
+                
+              });
+  SEB.addCase(getASTContext().getOptionalNoneDecl(), isNotPresentBB, contBB,
+              [&](ManagedValue input, SwitchCaseFullExpr &scope) {
+
+              });
   // If the result is address-only, we need to return something in memory,
   // otherwise the result is the BBArgument in the merge point.
   SILValue result;
