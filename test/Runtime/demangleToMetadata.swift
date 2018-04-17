@@ -333,5 +333,36 @@ DemangleToMetadataTests.test("superclass requirements") {
   expectNil(_typeByMangledName("4main4SG10VyAA2C3CG"))
 }
 
+// Nested types in same-type-constrained extensions
+
+struct SG11<T: P1, U: P2> {}
+
+struct ConformsToP1AndP2 : P1, P2 { }
+
+extension SG11 where U == T {
+  struct InnerTEqualsU<V: P3> { }
+}
+
+extension SG11 where T == ConformsToP1 {
+  struct InnerTEqualsConformsToP1<V: P3> { }
+}
+
+extension SG11 where U == ConformsToP2 {
+  struct InnerUEqualsConformsToP2<V: P3> { }
+}
+
+DemangleToMetadataTests.test("Nested types in same-type-constrained extensions") {
+  expectEqual(
+    SG11<ConformsToP1AndP2, ConformsToP1AndP2>.InnerTEqualsU<ConformsToP3>.self,
+    _typeByMangledName("4main4SG11VA2A2P2Rzq_RszrlE13InnerTEqualsUVyAA015ConformsToP1AndC0VAH_AA0fG2P3VG")!)
+  expectEqual(
+    SG11<ConformsToP1, ConformsToP2>.InnerTEqualsConformsToP1<ConformsToP3>.self,
+    _typeByMangledName("4main4SG11VA2A12ConformsToP1VRszrlE012InnerTEqualscdE0VyAeA0cD2P2V_AA0cD2P3VG")!)
+  expectEqual(
+    SG11<ConformsToP1, ConformsToP2>.InnerUEqualsConformsToP2<ConformsToP3>.self,
+    _typeByMangledName("4main4SG11VA2A12ConformsToP2VRs_rlE012InnerUEqualscdE0VyAA0cD2P1VAE_AA0cD2P3VG")!)
+}
+
+
 runAllTests()
 
