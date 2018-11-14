@@ -1040,10 +1040,11 @@ public:
         } else {
           // Not enough extra inhabitants for all cases. We have to add an
           // extra tag field.
-          NumExtraInhabitants = 0;
-          Size += getEnumTagCounts(Size,
-                                   NoPayloadCases - NumExtraInhabitants,
-                                   /*payloadCases=*/1).numTagBytes;
+          auto tagCounts = getEnumTagCounts(Size,
+                                          NoPayloadCases - NumExtraInhabitants,
+                                          /*payloadCases=*/1);
+          Size += tagCounts.numTagBytes;
+          NumExtraInhabitants = getNumExtraInhabitantsFromTagBytes(tagCounts);
         }
       }
 
@@ -1075,12 +1076,7 @@ public:
         Size += tagCounts.numTagBytes;
         // Dynamic multi-payload enums use the tag representations not assigned
         // to cases for extra inhabitants.
-        if (tagCounts.numTagBytes >= 32) {
-          NumExtraInhabitants = INT_MAX;
-        } else {
-          NumExtraInhabitants =
-            (1 << (tagCounts.numTagBytes * 8)) - tagCounts.numTags;
-        }
+        NumExtraInhabitants = getNumExtraInhabitantsFromTagBytes(tagCounts);
       }
     }
 

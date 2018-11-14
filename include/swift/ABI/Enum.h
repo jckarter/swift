@@ -18,6 +18,7 @@
 #define SWIFT_ABI_ENUM_H
 
 #include <stdlib.h>
+#include <limits.h>
 
 namespace swift {
 
@@ -46,6 +47,12 @@ getEnumTagCounts(size_t size, unsigned emptyCases, unsigned payloadCases) {
                           numTags <   256 ? 1 :
                           numTags < 65536 ? 2 : 4);
   return {numTags, numTagBytes};
+}
+
+inline unsigned getNumExtraInhabitantsFromTagBytes(EnumTagCounts tagCounts) {
+  return tagCounts.numTagBytes >= 4
+    ? INT_MAX
+    : (1 << (tagCounts.numTagBytes * 8)) - tagCounts.numTags;
 }
 
 } // namespace swift

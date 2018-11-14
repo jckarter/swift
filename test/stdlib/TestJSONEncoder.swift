@@ -1061,6 +1061,7 @@ class TestJSONEncoder : TestJSONEncoderSuper {
       decoder.nonConformingFloatDecodingStrategy = nonConformingFloatDecodingStrategy
       decoder.keyDecodingStrategy = keyDecodingStrategy
       let decoded = try decoder.decode(T.self, from: payload)
+      print("received \(decoded) from \(value)")
       expectEqual(decoded, value, "\(T.self) did not round-trip to an equal value.")
     } catch {
       expectUnreachable("Failed to decode \(T.self) from JSON: \(error)")
@@ -1531,10 +1532,12 @@ fileprivate struct OptionalTopLevelWrapper<T> : Codable, Equatable where T : Cod
   init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     value = try container.decode(T?.self, forKey: .value)
+    print("wrapped \(value) \(self)")
   }
 
   func encode(to encoder: Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
+    print("unwrapped \(value) \(self)")
     try container.encode(value, forKey: .value)
   }
 

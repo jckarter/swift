@@ -1,6 +1,6 @@
 // RUN: %empty-directory(%t)
 
-// RUN: %target-build-swift -parse-stdlib -Xfrontend -verify-type-layout -Xfrontend SpareBitExtraInhabitants -Xfrontend -verify-type-layout -Xfrontend SpareBitSingleExtraInhabitant -Xfrontend -verify-type-layout -Xfrontend SpareBitNoExtraInhabitant -Xfrontend -verify-type-layout -Xfrontend SpareBitNoExtraInhabitant2 -Xfrontend -verify-type-layout -Xfrontend TwoTagExtraInhabitants -Xfrontend -verify-type-layout -Xfrontend ThreeTagExtraInhabitants -Xfrontend -verify-type-layout -Xfrontend NoTagExtraInhabitants -Xfrontend -verify-type-layout -Xfrontend DynamicExtraInhabitantsNever -Xfrontend -verify-type-layout -Xfrontend DynamicExtraInhabitantsZeroBytes -Xfrontend -verify-type-layout -Xfrontend DynamicExtraInhabitantsOneByte -Xfrontend -verify-type-layout -Xfrontend DynamicExtraInhabitantsTwoBytes -O -o %t/a.out %s
+// RUN: %target-build-swift -parse-stdlib -Xfrontend -verify-type-layout -Xfrontend SpareBitExtraInhabitants -Xfrontend -verify-type-layout -Xfrontend SpareBitSingleExtraInhabitant -Xfrontend -verify-type-layout -Xfrontend SpareBitNoExtraInhabitant -Xfrontend -verify-type-layout -Xfrontend SpareBitNoExtraInhabitant2 -Xfrontend -verify-type-layout -Xfrontend TwoTagExtraInhabitants -Xfrontend -verify-type-layout -Xfrontend ThreeTagExtraInhabitants -Xfrontend -verify-type-layout -Xfrontend NoTagExtraInhabitants -Xfrontend -verify-type-layout -Xfrontend DynamicExtraInhabitantsNever -Xfrontend -verify-type-layout -Xfrontend DynamicExtraInhabitantsZeroBytes -Xfrontend -verify-type-layout -Xfrontend DynamicExtraInhabitantsOneByte -Xfrontend -verify-type-layout -Xfrontend DynamicExtraInhabitantsTwoBytes -Xfrontend -verify-type-layout -Xfrontend SinglePayloadNoExtraInhabitants -Xfrontend -verify-type-layout -Xfrontend SinglePayloadOneExtraInhabitantAndOneTag -Xfrontend -verify-type-layout -Xfrontend SinglePayloadDynamicNever -Xfrontend -verify-type-layout -Xfrontend SinglePayloadDynamicEmpty -Xfrontend -verify-type-layout -Xfrontend SinglePayloadDynamicByte -O -o %t/a.out %s
 // RUN: %target-run %t/a.out 2>&1
 
 // Type layout verifier is only compiled into the runtime in asserts builds.
@@ -51,6 +51,7 @@ enum ThreeTagExtraInhabitants {
 }
 
 enum NoTagExtraInhabitants {
+  // 256 tags with Int32 payloads
   case aaa(Builtin.Int32), aab(Builtin.Int32), aac(Builtin.Int32), aad(Builtin.Int32), aae(Builtin.Int32), aaf(Builtin.Int32), aag(Builtin.Int32), aah(Builtin.Int32)
   case aba(Builtin.Int32), abb(Builtin.Int32), abc(Builtin.Int32), abd(Builtin.Int32), abe(Builtin.Int32), abf(Builtin.Int32), abg(Builtin.Int32), abh(Builtin.Int32)
   case aca(Builtin.Int32), acb(Builtin.Int32), acc(Builtin.Int32), acd(Builtin.Int32), ace(Builtin.Int32), acf(Builtin.Int32), acg(Builtin.Int32), ach(Builtin.Int32)
@@ -92,6 +93,7 @@ enum DynamicExtraInhabitants<T> {
   case payloadA(T)
   case payloadB(T)
 
+  // 256 empty tags
   case tagAAA, tagAAB, tagAAC, tagAAD, tagAAE, tagAAF, tagAAG, tagAAH
   case tagABA, tagABB, tagABC, tagABD, tagABE, tagABF, tagABG, tagABH
   case tagACA, tagACB, tagACC, tagACD, tagACE, tagACF, tagACG, tagACH
@@ -100,7 +102,6 @@ enum DynamicExtraInhabitants<T> {
   case tagAFA, tagAFB, tagAFC, tagAFD, tagAFE, tagAFF, tagAFG, tagAFH
   case tagAGA, tagAGB, tagAGC, tagAGD, tagAGE, tagAGF, tagAGG, tagAGH
   case tagAHA, tagAHB, tagAHC, tagAHD, tagAHE, tagAHF, tagAHG, tagAHH
-  case tagAIA, tagAIB, tagAIC, tagAID, tagAIE, tagAIF, tagAIG, tagAIH
 
   case tagBAA, tagBAB, tagBAC, tagBAD, tagBAE, tagBAF, tagBAG, tagBAH
   case tagBBA, tagBBB, tagBBC, tagBBD, tagBBE, tagBBF, tagBBG, tagBBH
@@ -110,7 +111,6 @@ enum DynamicExtraInhabitants<T> {
   case tagBFA, tagBFB, tagBFC, tagBFD, tagBFE, tagBFF, tagBFG, tagBFH
   case tagBGA, tagBGB, tagBGC, tagBGD, tagBGE, tagBGF, tagBGG, tagBGH
   case tagBHA, tagBHB, tagBHC, tagBHD, tagBHE, tagBHF, tagBHG, tagBHH
-  case tagBIA, tagBIB, tagBIC, tagBID, tagBIE, tagBIF, tagBIG, tagBIH
 
   case tagCAA, tagCAB, tagCAC, tagCAD, tagCAE, tagCAF, tagCAG, tagCAH
   case tagCBA, tagCBB, tagCBC, tagCBD, tagCBE, tagCBF, tagCBG, tagCBH
@@ -120,7 +120,6 @@ enum DynamicExtraInhabitants<T> {
   case tagCFA, tagCFB, tagCFC, tagCFD, tagCFE, tagCFF, tagCFG, tagCFH
   case tagCGA, tagCGB, tagCGC, tagCGD, tagCGE, tagCGF, tagCGG, tagCGH
   case tagCHA, tagCHB, tagCHC, tagCHD, tagCHE, tagCHF, tagCHG, tagCHH
-  case tagCIA, tagCIB, tagCIC, tagCID, tagCIE, tagCIF, tagCIG, tagCIH
 
   case tagDAA, tagDAB, tagDAC, tagDAD, tagDAE, tagDAF, tagDAG, tagDAH
   case tagDBA, tagDBB, tagDBC, tagDBD, tagDBE, tagDBF, tagDBG, tagDBH
@@ -130,13 +129,64 @@ enum DynamicExtraInhabitants<T> {
   case tagDFA, tagDFB, tagDFC, tagDFD, tagDFE, tagDFF, tagDFG, tagDFH
   case tagDGA, tagDGB, tagDGC, tagDGD, tagDGE, tagDGF, tagDGG, tagDGH
   case tagDHA, tagDHB, tagDHC, tagDHD, tagDHE, tagDHF, tagDHG, tagDHH
-  case tagDIA, tagDIB, tagDIC, tagDID, tagDIE, tagDIF, tagDIG, tagDIH
 }
 
 typealias DynamicExtraInhabitantsNever = DynamicExtraInhabitants<Never>
 typealias DynamicExtraInhabitantsZeroBytes = DynamicExtraInhabitants<()>
 typealias DynamicExtraInhabitantsOneByte = DynamicExtraInhabitants<UInt8>
 typealias DynamicExtraInhabitantsTwoBytes = DynamicExtraInhabitants<UInt16>
+
+enum SinglePayloadNoExtraInhabitants {
+  case payload(Int)
+  case tag
+}
+enum SinglePayloadOneExtraInhabitantAndOneTag {
+  case payload(UnsafeRawPointer)
+  case tagA, tagB
+}
+enum SinglePayloadDynamic<T> {
+  case payload(T)
+
+  // 255 empty tags
+  case tagAAA, tagAAB, tagAAC, tagAAD, tagAAE, tagAAF, tagAAG, tagAAH
+  case tagABA, tagABB, tagABC, tagABD, tagABE, tagABF, tagABG, tagABH
+  case tagACA, tagACB, tagACC, tagACD, tagACE, tagACF, tagACG, tagACH
+  case tagADA, tagADB, tagADC, tagADD, tagADE, tagADF, tagADG, tagADH
+  case tagAEA, tagAEB, tagAEC, tagAED, tagAEE, tagAEF, tagAEG, tagAEH
+  case tagAFA, tagAFB, tagAFC, tagAFD, tagAFE, tagAFF, tagAFG, tagAFH
+  case tagAGA, tagAGB, tagAGC, tagAGD, tagAGE, tagAGF, tagAGG, tagAGH
+  case tagAHA, tagAHB, tagAHC, tagAHD, tagAHE, tagAHF, tagAHG, tagAHH
+
+  case tagBAA, tagBAB, tagBAC, tagBAD, tagBAE, tagBAF, tagBAG, tagBAH
+  case tagBBA, tagBBB, tagBBC, tagBBD, tagBBE, tagBBF, tagBBG, tagBBH
+  case tagBCA, tagBCB, tagBCC, tagBCD, tagBCE, tagBCF, tagBCG, tagBCH
+  case tagBDA, tagBDB, tagBDC, tagBDD, tagBDE, tagBDF, tagBDG, tagBDH
+  case tagBEA, tagBEB, tagBEC, tagBED, tagBEE, tagBEF, tagBEG, tagBEH
+  case tagBFA, tagBFB, tagBFC, tagBFD, tagBFE, tagBFF, tagBFG, tagBFH
+  case tagBGA, tagBGB, tagBGC, tagBGD, tagBGE, tagBGF, tagBGG, tagBGH
+  case tagBHA, tagBHB, tagBHC, tagBHD, tagBHE, tagBHF, tagBHG, tagBHH
+
+  case tagCAA, tagCAB, tagCAC, tagCAD, tagCAE, tagCAF, tagCAG, tagCAH
+  case tagCBA, tagCBB, tagCBC, tagCBD, tagCBE, tagCBF, tagCBG, tagCBH
+  case tagCCA, tagCCB, tagCCC, tagCCD, tagCCE, tagCCF, tagCCG, tagCCH
+  case tagCDA, tagCDB, tagCDC, tagCDD, tagCDE, tagCDF, tagCDG, tagCDH
+  case tagCEA, tagCEB, tagCEC, tagCED, tagCEE, tagCEF, tagCEG, tagCEH
+  case tagCFA, tagCFB, tagCFC, tagCFD, tagCFE, tagCFF, tagCFG, tagCFH
+  case tagCGA, tagCGB, tagCGC, tagCGD, tagCGE, tagCGF, tagCGG, tagCGH
+  case tagCHA, tagCHB, tagCHC, tagCHD, tagCHE, tagCHF, tagCHG, tagCHH
+
+  case tagDAA, tagDAB, tagDAC, tagDAD, tagDAE, tagDAF, tagDAG, tagDAH
+  case tagDBA, tagDBB, tagDBC, tagDBD, tagDBE, tagDBF, tagDBG, tagDBH
+  case tagDCA, tagDCB, tagDCC, tagDCD, tagDCE, tagDCF, tagDCG, tagDCH
+  case tagDDA, tagDDB, tagDDC, tagDDD, tagDDE, tagDDF, tagDDG, tagDDH
+  case tagDEA, tagDEB, tagDEC, tagDED, tagDEE, tagDEF, tagDEG, tagDEH
+  case tagDFA, tagDFB, tagDFC, tagDFD, tagDFE, tagDFF, tagDFG, tagDFH
+  case tagDGA, tagDGB, tagDGC, tagDGD, tagDGE, tagDGF, tagDGG, tagDGH
+  case tagDHA, tagDHB, tagDHC, tagDHD, tagDHE, tagDHF, tagDHG
+}
+typealias SinglePayloadDynamicNever = SinglePayloadDynamic<Never>
+typealias SinglePayloadDynamicEmpty = SinglePayloadDynamic<()>
+typealias SinglePayloadDynamicByte = SinglePayloadDynamic<UInt8>
 
 var tests = TestSuite("extra inhabitants of structs")
 
@@ -181,6 +231,8 @@ tests.test("types that have no extra inhabitant") {
   expectHasNoExtraInhabitant(SpareBitNoExtraInhabitant.self)
   expectHasNoExtraInhabitant(SpareBitNoExtraInhabitant2.self)
   expectHasNoExtraInhabitant(NoTagExtraInhabitants.self)
+  expectHasNoExtraInhabitant(SinglePayloadDynamicNever.self)
+  expectHasNoExtraInhabitant(SinglePayloadDynamicEmpty.self)
 }
 tests.test("types that have at least one extra inhabitant") {
   expectHasExtraInhabitant(SpareBitExtraInhabitants.self, nil: nil)
@@ -191,6 +243,9 @@ tests.test("types that have at least one extra inhabitant") {
   expectHasExtraInhabitant(DynamicExtraInhabitantsZeroBytes.self, nil: nil)
   expectHasExtraInhabitant(DynamicExtraInhabitantsOneByte.self, nil: nil)
   expectHasExtraInhabitant(DynamicExtraInhabitantsTwoBytes.self, nil: nil)
+  expectHasExtraInhabitant(SinglePayloadDynamicByte.self, nil: nil)
+  expectHasExtraInhabitant(SinglePayloadNoExtraInhabitants.self, nil: nil)
+  expectHasExtraInhabitant(SinglePayloadOneExtraInhabitantAndOneTag.self, nil: nil)
 }
 tests.test("types that have at least two extra inhabitants") {
   expectHasAtLeastTwoExtraInhabitants(SpareBitExtraInhabitants.self, nil: nil, someNil: .some(nil))
@@ -200,5 +255,8 @@ tests.test("types that have at least two extra inhabitants") {
   expectHasAtLeastTwoExtraInhabitants(DynamicExtraInhabitantsZeroBytes.self, nil: nil, someNil: .some(nil))
   expectHasAtLeastTwoExtraInhabitants(DynamicExtraInhabitantsOneByte.self, nil: nil, someNil: .some(nil))
   expectHasAtLeastTwoExtraInhabitants(DynamicExtraInhabitantsTwoBytes.self, nil: nil, someNil: .some(nil))
+  expectHasAtLeastTwoExtraInhabitants(SinglePayloadDynamicByte.self, nil: nil, someNil: .some(nil))
+  expectHasAtLeastTwoExtraInhabitants(SinglePayloadNoExtraInhabitants.self, nil: nil, someNil: .some(nil))
+  expectHasAtLeastTwoExtraInhabitants(SinglePayloadOneExtraInhabitantAndOneTag.self, nil: nil, someNil: .some(nil))
 }
 runAllTests()

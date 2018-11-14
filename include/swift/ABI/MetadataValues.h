@@ -119,10 +119,12 @@ class TargetValueWitnessFlags {
 public:
   // The polarity of these bits is chosen so that, when doing struct layout, the
   // flags of the field types can be mostly bitwise-or'ed together to derive the
-  // flags for the struct. (The "non-inline" and "has-extra-inhabitants" bits
-  // still require additional fixup.)
+  // flags for the struct. (The "non-inline" bit still requires additional
+  // fixup.)
   enum : int_type {
     AlignmentMask =       0x000000FF,
+    RuntimePrivateUseMask =   0x0000FF00,
+    RuntimePrivateUseShift = 8,
     IsNonPOD =            0x00010000,
     IsNonInline =         0x00020000,
     HasExtraInhabitants = 0x00040000,
@@ -163,6 +165,16 @@ public:
   size_t getAlignment() const { return getAlignmentMask() + 1; }
   constexpr TargetValueWitnessFlags withAlignment(size_t alignment) const {
     return withAlignmentMask(alignment - 1);
+  }
+  
+  /// The byte after the alignment mask must be set to zero in compiler-
+  /// instantiated patterns. The runtime may place data here for its own use.
+  uint8_t getRuntimePrivateUseBits() const {
+    return (Data & RuntimePrivateUseMask) >> RuntimePrivateUseShift;
+  }
+  constexpr TargetValueWitnessFlags withRuntimePrivateUseBits(uint8_t bits) const {
+    return TargetValueWitnessFlags((Data & ~RuntimePrivateUseMask) |
+                                   ((unsigned)bits << RuntimePrivateUseShift));
   }
 
   /// True if the type requires out-of-line allocation of its storage.
