@@ -227,11 +227,9 @@ private:
     bool IsLazy = false;
   };
 
-  /// The set of type metadata that have been enqueued for lazy emission.
-  ///
-  /// It can also contain some eagerly emitted metadata. Those are ignored in
-  /// lazy emission.
-  llvm::DenseMap<NominalTypeDecl*, LazyTypeGlobalsInfo> LazyTypeGlobals;
+  /// The set of type metadata that have been used, along with metadata about
+  /// what metadata records need lazy emission.
+  llvm::DenseMap<NominalTypeDecl*, LazyTypeGlobalsInfo> UsedTypeGlobals;
 
   /// The queue of lazy type metadata to emit.
   llvm::SmallVector<NominalTypeDecl*, 4> LazyTypeMetadata;
@@ -336,6 +334,10 @@ public:
 
   // Emit the code to replace dynamicReplacement(for:) functions.
   void emitDynamicReplacements();
+  
+  /// Emit references to all of the type context descriptors for nominal types
+  /// that were only referenced from mangled names.
+  void emitUsedTypeContexts();
 
   /// Checks if the metadata of \p Nominal can be emitted lazily.
   ///

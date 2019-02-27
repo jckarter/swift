@@ -107,7 +107,7 @@ bool IRGenerator::tryEnableLazyTypeMetadata(NominalTypeDecl *Nominal) {
       break;
   }
 
-  auto insertResult = LazyTypeGlobals.try_emplace(Nominal);
+  auto insertResult = UsedTypeGlobals.try_emplace(Nominal);
   auto &entry = insertResult.first->second;
   assert(!entry.IsLazy);
   entry.IsLazy = true;
@@ -1107,7 +1107,7 @@ void IRGenerator::emitLazyDefinitions() {
     // Emit any lazy type metadata we require.
     while (!LazyTypeMetadata.empty()) {
       NominalTypeDecl *type = LazyTypeMetadata.pop_back_val();
-      auto &entry = LazyTypeGlobals.find(type)->second;
+      auto &entry = UsedTypeGlobals.find(type)->second;
       assert(entry.IsLazy && entry.IsMetadataUsed && !entry.IsMetadataEmitted);
       entry.IsMetadataEmitted = true;
       CurrentIGMPtr IGM = getGenModule(type->getDeclContext());
@@ -1115,7 +1115,7 @@ void IRGenerator::emitLazyDefinitions() {
     }
     while (!LazyTypeContextDescriptors.empty()) {
       NominalTypeDecl *type = LazyTypeContextDescriptors.pop_back_val();
-      auto &entry = LazyTypeGlobals.find(type)->second;
+      auto &entry = UsedTypeGlobals.find(type)->second;
       assert(entry.IsLazy && entry.IsDescriptorUsed &&
              !entry.IsDescriptorEmitted);
       entry.IsDescriptorEmitted = true;
@@ -1165,7 +1165,7 @@ void IRGenerator::noteUseOfTypeGlobals(NominalTypeDecl *type,
     return;
   
   // Try to create a new record of the fact that we used this type.
-  auto insertResult = LazyTypeGlobals.try_emplace(type);
+  auto insertResult = UsedTypeGlobals.try_emplace(type);
   auto &entry = insertResult.first->second;
 
   // Imported structs and enums types are known to be lazy.
@@ -1211,6 +1211,7 @@ void IRGenerator::noteUseOfTypeGlobals(NominalTypeDecl *type,
     LazyTypeContextDescriptors.push_back(type);
   }
 }
+
 static std::string getDynamicReplacementSection(IRGenModule &IGM) {
   std::string sectionName;
   switch (IGM.TargetInfo.OutputObjectFormat) {
@@ -1340,6 +1341,49 @@ void IRGenerator::emitDynamicReplacements() {
       /*isConstant*/ true, llvm::GlobalValue::PrivateLinkage);
   autoReplVar->setSection(getDynamicReplacementSection(IGM));
   IGM.addUsedGlobal(autoReplVar);
+}
+
+void IRGenerator::emitUsedTypeContexts() {
+  // Collect the used types that weren't emitted, and that don't have any
+  // explicit symbol references in any of our LLVM modules.
+  SmallVector<NominalTypeDecl *, 32> typesToReference;
+  SmallString<128> symbolNameBuf;
+  for (auto &usedType : UsedTypeGlobals) {
+    // We want types that are used...
+    if (!usedType.second.IsDescriptorUsed)
+      goto skip;
+    // ...whose descriptor wasn't emitted locally into this module...
+    if (usedType.second.IsDescriptorEmitted)
+      goto skip;
+    // ...and that aren't already referenced symbolically.
+    auto entity = LinkEntity::forNominalTypeDescriptor(usedType.first);
+    symbolNameBuf.clear();
+    entity.mangle(symbolNameBuf);
+    for (auto &genModule : GenModules) {
+      llvm::Module &llvmModule = genModule.second->Module;
+      if (llvmModule.getNamedGlobal(symbolNameBuf))
+        goto skip;
+    }
+    
+    typesToReference.push_back(usedType.first);
+  skip:;
+  }
+  
+  if (typesToReference.empty())
+    return;
+  
+  IRGenModule *IGM = getPrimaryIGM();
+  
+  // TODO: Do this in a way that doesn't take up space in the final linked
+  // binary. We could use the `-u symbol` linker option (or Microsoft
+  // `/include:symbol`) if autolink supported that, although it currently does
+  // not in Darwin ld64.
+  //
+  // The lowest-tech and most portable way to do this is to reference all the
+  // type context descriptors we need in a global list, though this wastes space
+  // in the resulting binary.
+  ConstantInitBuilder builder(IGM);
+  
 }
 
 void IRGenerator::emitEagerClassInitialization() {
