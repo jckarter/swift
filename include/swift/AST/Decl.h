@@ -2693,6 +2693,12 @@ public:
   /// Get the decl for this value's opaque result type, if it has one.
   OpaqueTypeDecl *getOpaqueResultTypeDecl() const;
   
+  /// Returns true if this declaration syntactically declares an opaque result type.
+  ///
+  /// This does not require the declaration to be validated to return a correct result, unlike
+  /// \c getOpaqueResultTypeDecl .
+  bool declaresOpaqueResultType() const;
+  
   /// Set the opaque return type decl for this decl.
   ///
   /// `this` must be of a decl type that supports opaque return types, and

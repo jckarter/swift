@@ -2367,7 +2367,7 @@ OverloadSignature ValueDecl::getOverloadSignature() const {
   signature.IsNominal = isa<NominalTypeDecl>(this);
   signature.IsTypeAlias = isa<TypeAliasDecl>(this);
   signature.HasOpaqueReturnType =
-                       !signature.IsVariable && (bool)getOpaqueResultTypeDecl();
+                     !signature.IsVariable && (bool)declaresOpaqueResultType();
 
   // Unary operators also include prefix/postfix.
   if (auto func = dyn_cast<FuncDecl>(this)) {
@@ -2453,6 +2453,21 @@ OpaqueTypeDecl *ValueDecl::getOpaqueResultTypeDecl() const {
   } else {
     return nullptr;
   }
+}
+
+bool ValueDecl::declaresOpaqueResultType() const {
+  TypeRepr *repr = nullptr;
+  if (auto func = dyn_cast<FuncDecl>(this)) {
+    repr = func->getBodyResultTypeLoc().getTypeRepr();
+  }
+  if (auto subscript = dyn_cast<SubscriptDecl>(this)) {
+    repr = subscript->getElementTypeLoc().getTypeRepr();
+  }
+  if (auto var = dyn_cast<VarDecl>(this)) {
+    repr = var->getTypeLoc().getTypeRepr();
+  }
+  
+  return repr && isa<OpaqueReturnTypeRepr>(repr);
 }
 
 void ValueDecl::setOpaqueResultTypeDecl(OpaqueTypeDecl *D) {
