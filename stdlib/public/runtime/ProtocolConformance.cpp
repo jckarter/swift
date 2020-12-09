@@ -676,6 +676,7 @@ llvm::Optional<TypeLookupError> swift::_checkGenericRequirements(
     // Check the requirement.
     switch (req.getKind()) {
     case GenericRequirementKind::Protocol: {
+#warning "todo"
       const WitnessTable *witnessTable = nullptr;
       if (!_conformsToProtocol(nullptr, subjectType, req.getProtocol(),
                                &witnessTable)) {
