@@ -1010,6 +1010,11 @@ void StmtEmitter::visitGuardStmt(GuardStmt *S) {
   JumpDest bodyBB =
     JumpDest(createBasicBlock(), SGF.getCleanupsDepth(), CleanupLocation(S));
 
+  // Emit the condition bindings, branching to the bodyBB if they fail.
+  auto NumFalseTaken = SGF.loadProfilerCount(S->getBody());
+  auto NumNonTaken = SGF.loadProfilerCount(S);
+  SGF.emitStmtCondition(S->getCond(), bodyBB, S, NumNonTaken, NumFalseTaken);
+
   {
     // Move the insertion point to the 'body' block temporarily and emit it.
     // Note that we don't push break/continue locations since they aren't valid
@@ -1025,10 +1030,6 @@ void StmtEmitter::visitGuardStmt(GuardStmt *S) {
       SGF.B.createUnreachable(S);
   }
 
-  // Emit the condition bindings, branching to the bodyBB if they fail.
-  auto NumFalseTaken = SGF.loadProfilerCount(S->getBody());
-  auto NumNonTaken = SGF.loadProfilerCount(S);
-  SGF.emitStmtCondition(S->getCond(), bodyBB, S, NumNonTaken, NumFalseTaken);
 }
 
 void StmtEmitter::visitWhileStmt(WhileStmt *S) {
