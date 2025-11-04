@@ -1922,6 +1922,10 @@ private:
     case TypeKind::BuiltinUnboundGeneric:
       llvm_unreachable("not a real type");
 
+    case TypeKind::BuiltinBorrow: {
+      llvm_unreachable("todo");
+
+    }
     case TypeKind::BuiltinFixedArray: {
       if (Opts.DebugInfoLevel > IRGenDebugInfoLevel::ASTTypes) {
         auto *FixedArray = llvm::cast<swift::BuiltinFixedArrayType>(BaseTy);
