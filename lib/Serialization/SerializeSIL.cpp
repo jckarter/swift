@@ -1784,7 +1784,12 @@ void SILSerializer::writeSILInstruction(const SILInstruction &SI) {
   case SILInstructionKind::ReturnInst:
   case SILInstructionKind::UncheckedOwnershipConversionInst:
   case SILInstructionKind::DestroyNotEscapedClosureInst:
-  case SILInstructionKind::ThrowInst: {
+  case SILInstructionKind::ThrowInst:
+  case SILInstructionKind::MakeBorrowInst:
+  case SILInstructionKind::MakeAddrBorrowInst:
+  case SILInstructionKind::DereferenceBorrowInst:
+  case SILInstructionKind::DereferenceAddrBorrowInst:
+  case SILInstructionKind::DereferenceBorrowAddrInst: {
     unsigned Attr = 0;
     if (auto *LI = dyn_cast<LoadInst>(&SI))
       Attr = unsigned(LI->getOwnershipQualifier());
@@ -2476,7 +2481,8 @@ void SILSerializer::writeSILInstruction(const SILInstruction &SI) {
   case SILInstructionKind::ExplicitCopyAddrInst:
   case SILInstructionKind::MarkUnresolvedMoveAddrInst:
   case SILInstructionKind::StoreInst:
-  case SILInstructionKind::StoreBorrowInst: {
+  case SILInstructionKind::StoreBorrowInst:
+  case SILInstructionKind::InitBorrowAddrInst: {
     SILValue operand, value;
     unsigned Attr = 0;
     if (SI.getKind() == SILInstructionKind::StoreInst) {
@@ -2510,6 +2516,9 @@ void SILSerializer::writeSILInstruction(const SILInstruction &SI) {
     } else if (auto *SBI = dyn_cast<StoreBorrowInst>(&SI)) {
       operand = SBI->getDest();
       value = SBI->getSrc();
+    } else if (auto *IBA = dyn_cast<InitBorrowAddrInst>(&SI)) {
+      operand = IBA->getReferent();
+      value = IBA->getDest();
     } else {
       llvm_unreachable("switch out of sync");
     }
