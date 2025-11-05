@@ -3482,6 +3482,11 @@ CONSTANT_TRANSLATION(TupleElementAddrInst, LookThrough)
 CONSTANT_TRANSLATION(StructElementAddrInst, LookThrough)
 CONSTANT_TRANSLATION(VectorBaseAddrInst, LookThrough)
 CONSTANT_TRANSLATION(UncheckedTakeEnumDataAddrInst, LookThrough)
+CONSTANT_TRANSLATION(MakeBorrowInst, LookThrough)
+CONSTANT_TRANSLATION(DereferenceBorrowInst, LookThrough)
+CONSTANT_TRANSLATION(MakeAddrBorrowInst, LookThrough)
+CONSTANT_TRANSLATION(DereferenceAddrBorrowInst, LookThrough)
+CONSTANT_TRANSLATION(DereferenceBorrowAddrInst, LookThrough)
 
 //===---
 // Store
@@ -3499,6 +3504,7 @@ CONSTANT_TRANSLATION(MarkUnresolvedMoveAddrInst, Store)
 CONSTANT_TRANSLATION(UncheckedRefCastAddrInst, Store)
 CONSTANT_TRANSLATION(UnconditionalCheckedCastAddrInst, Store)
 CONSTANT_TRANSLATION(StoreUnownedInst, Store)
+CONSTANT_TRANSLATION(InitBorrowAddrInst, Store)
 
 //===---
 // Ignored
