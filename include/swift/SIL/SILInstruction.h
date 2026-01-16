@@ -12105,12 +12105,12 @@ class InitBorrowAddrInst final
 
   FixedOperandList<2> Operands;
 
-  enum { Dest, Referent };
-
   InitBorrowAddrInst(SILDebugLocation loc, SILValue dest, SILValue referent)
       : InstructionBase(loc), Operands(this, dest, referent) {}
 
 public:
+  enum { Dest, Referent };
+
   SILValue getDest() const { return Operands[Dest].get(); }
   SILValue getReferent() const { return Operands[Referent].get(); }
 
